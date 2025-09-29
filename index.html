@@ -55,7 +55,6 @@
           max="36"
         />
         <button id="zapButton">Kill</button>
-        <button id="addButton">Add Random Mosquito</button>
       </div>
       <p style="text-align: center; color: #1e40af; font-size: 0.875rem;">
         Each mosquito has a hidden name and a hidden random number. Kill them all!
@@ -170,7 +169,7 @@
     function zapByNumber() {
       const inputValue = parseInt(numberInput.value, 10);
       if (isNaN(inputValue) || inputValue < 1 || inputValue > 100) {
-        showNotification("Please enter a valid number between 1 and 100!");
+        showNotification("Please enter a valid number between 1 and 36!");
         numberInput.value = "";
         return;
       }
@@ -327,4 +326,5 @@
     updateMosquitoDisplay();
   </script>
 </body>
+
 </html>
