@@ -1,0 +1,298 @@
+/* (Same CSS as before, with the addition of .name and .number styles) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  background: linear-gradient(to bottom, #e0f2fe, #dcfce7);
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: #4b5563;
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.input-section {
+  background: #dbeafe;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #93c5fd;
+  margin-bottom: 2rem;
+}
+
+.input-section h2 {
+  font-size: 1.5rem;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .input-group {
+    flex-direction: row;
+  }
+}
+
+input {
+  flex: 1;
+  padding: 1rem;
+  border: 1px solid #93c5fd;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  outline: none;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+}
+
+button {
+  padding: 1rem 1.5rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+#addButton {
+  background: #059669; /* Green for add */
+}
+
+#addButton:hover {
+  background: #047857;
+}
+
+#zapButton {
+  background: #dc2626; /* Red for zap */
+}
+
+#zapButton:hover {
+  background: #b91c1c;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.notification {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.notification.show {
+  opacity: 1;
+}
+
+.mosquito-section {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.mosquito-section h2 {
+  font-size: 1.5rem;
+  color: #374151;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.mosquito-count {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.mosquito-container {
+  background: linear-gradient(to bottom, #dcfce7, #dbeafe);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.mosquito-container.racket-cursor {
+  cursor: url('https://www.svgrepo.com/show/499000/mosquito-racket.svg') 32 32, auto;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  text-align: center;
+}
+
+.empty-state span {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1.25rem;
+}
+
+.mosquito {
+  position: absolute;
+  width: 4rem;
+  height: 4rem;
+  text-align: center;
+  user-select: none;
+  transition: all 1s ease;
+  cursor: pointer;
+}
+
+.mosquito span {
+  font-size: 2.5rem;
+  animation: fly 1.2s infinite ease-in-out;
+}
+
+@keyframes fly {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  33% {
+    transform: translateY(-4px) rotate(7deg);
+  }
+  66% {
+    transform: translateY(0) rotate(-7deg);
+  }
+}
+
+.mosquito .name,
+.mosquito .number {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  pointer-events: none;
+}
+
+.mosquito.show-info .name,
+.mosquito.show-info .number {
+  display: block;
+}
+
+.zap-effect {
+  position: absolute;
+  inset: 0;
+  background: rgba(220, 38, 38, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  animation: zap 0.3s ease-out;
+}
+
+@keyframes zap {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+  }
+
+  .input-group {
+    gap: 0.25rem;
+  }
+
+  button {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+
+  .mosquito-container {
+    min-height: 300px;
+  }
+}

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lamok</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* Mosquito racket cursor on mosquito container when mosquitoes exist */
+    .mosquito-container.racket-cursor {
+      cursor: url('https://www.svgrepo.com/show/499000/mosquito-racket.svg') 32 32, auto;
+    }
+
+    /* Hide mosquito names and numbers by default */
+    .mosquito .name,
+    .mosquito .number {
+      display: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #374151;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      margin-top: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Show name and number when mosquito has class 'show-info' */
+    .mosquito.show-info .name,
+    .mosquito.show-info .number {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mosquito Randomizer</h1>
+    <p class="subtitle">
+      Click mosquitoes to kill them and reveal their hidden names and numbers, or enter a number(1-36) to kill a specific mosquito!
+    </p>
+
+    <div class="input-section">
+      <h2>Target by Number</h2>
+      <div class="input-group">
+        <input
+          type="number"
+          id="numberInput"
+          placeholder="Enter a number to kill..."
+          min="1"
+          max="36"
+        />
+        <button id="zapButton">Kill</button>
+        <button id="addButton">Add Random Mosquito</button>
+      </div>
+      <p style="text-align: center; color: #1e40af; font-size: 0.875rem;">
+        Each mosquito has a hidden name and a hidden random number. Kill them all!
+      </p>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <div class="mosquito-section">
+      <h2>
+        Mga Lamok: <span class="mosquito-count" id="mosquitoCount">0</span> na mga lamok
+      </h2>
+      <div class="mosquito-container" id="mosquitoContainer">
+        <div class="empty-state">
+          <span>🦟</span>
+          <p>No mosquitoes yet.<br />Add some to start zapping!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Default list of names
+    const defaultNames = [
+      "MARTINEZ, JUSTIN RHOSS D.",
+      "BERNAL, JASMIN D.",
+      "JAVIER, PATRICK M.",
+      "RAMOS, YUAN ANDREI C.",
+      "BARIATA, JOHN PATRICK C.",
+      "BENDONG, JUSTINE CIARA D.",
+      "PANALIGAN, MICHAELA C.",
+      "JACOB, JOHN MICHAEL P.",
+      "QUINTO, ISAAC ARRON F.",
+      "SITJAR, CYRIL P.",
+	"MATULOY, MA. CASSANDRA D.",
+	"REBENQUE, RHONE PAULENE P.",
+	"PERCINCULA, PRINCESS LARA B.",
+	"RAMOS, JHUN CARLO B.",
+	"MAGSANGA, ALIANA NICOLE A.",
+	"MATANGUIHAN, BRIDGET O.",
+	"VILLAVICENCIO, ALICESON O.",
+	"CORTUNA, NHEL EDUARD B.",
+	"PAHATI, ANGELA RYN C.",
+	"DE CHAVEZ, VOLTAIRE JUSTINE B.",
+	"BAUTISTA, ALEXANDRA XYRIELLE S.",
+	"SALES, BRENDAN ROY M.",
+	"GRECIA, JAMES BENEDICT P.",
+	"COLLAMAR, ALEXANDER JOSHUA D.",
+	"DELA PAZ, JAREN KEN GABRIEL R.",
+	"CIPRES, JUSTINE HARVEY C.",
+	"AGUHO, ALWYNN L.",
+	"MAGTIBAY, MICO JOHN R.",
+	"CASILAO, LENARD RICO C.",
+	"MERCADO, KHERLE B.",
+	"SUAYAN, MARK AARON C.",
+	"JASARENO, ANDREI G.",
+	"NAVARRO, PRECIOUS ADELLINE V.",
+	"MAPALAD, NELL JOHN CEDRICK J.",
+	"BONGOLTO, DELMAR G.",
+	"BORROMEO, JAMAICA L."
+    ];
+
+    // Mosquitoes array: each item is { name: string, number: int }
+    const mosquitoes = [];
+    const usedNumbers = new Set();
+    let isZapping = false;
+
+    // Generate unique random number 1-100
+    function generateUniqueRandomNumber() {
+      let number;
+      do {
+        number = Math.floor(Math.random() * 36) + 1;
+      } while (usedNumbers.has(number));
+      usedNumbers.add(number);
+      return number;
+    }
+
+    // Initialize mosquitoes with default names and random numbers
+    function initializeDefaultMosquitoes() {
+      defaultNames.forEach((name) => {
+        mosquitoes.push({
+          name,
+          number: generateUniqueRandomNumber(),
+        });
+      });
+    }
+
+    // DOM elements
+    const numberInput = document.getElementById("numberInput");
+    const zapButton = document.getElementById("zapButton");
+    const addButton = document.getElementById("addButton");
+    const notification = document.getElementById("notification");
+    const mosquitoCount = document.getElementById("mosquitoCount");
+    const mosquitoContainer = document.getElementById("mosquitoContainer");
+    const emptyState = mosquitoContainer.querySelector(".empty-state");
+
+    // Add random mosquito with random name and number
+    function addRandomMosquito() {
+      // Generate a random name from defaultNames or create a generic one
+      const randomName =
+        defaultNames[Math.floor(Math.random() * defaultNames.length)] +
+        " " +
+        Math.floor(Math.random() * 1000);
+      const number = generateUniqueRandomNumber();
+      mosquitoes.push({ name: randomName, number });
+      updateMosquitoDisplay();
+      numberInput.focus();
+      showNotification("New mosquito added with hidden name and number!");
+    }
+
+    // Zap mosquito by input number
+    function zapByNumber() {
+      const inputValue = parseInt(numberInput.value, 10);
+      if (isNaN(inputValue) || inputValue < 1 || inputValue > 100) {
+        showNotification("Please enter a valid number between 1 and 100!");
+        numberInput.value = "";
+        return;
+      }
+
+      // Find mosquito element with matching number
+      const targetMosquito = Array.from(
+        document.querySelectorAll(".mosquito")
+      ).find((el) => parseInt(el.dataset.number, 10) === inputValue);
+
+      if (!targetMosquito) {
+        showNotification(
+          `No mosquito with number ${inputValue}! Try adding more or clicking one.`
+        );
+        numberInput.value = "";
+        return;
+      }
+
+      zapMosquito({ currentTarget: targetMosquito });
+      numberInput.value = "";
+    }
+
+    // Update mosquito display
+    function updateMosquitoDisplay() {
+      mosquitoCount.textContent = mosquitoes.length;
+
+      if (mosquitoes.length === 0) {
+        emptyState.style.display = "flex";
+        mosquitoContainer.classList.remove("racket-cursor");
+        return;
+      }
+
+      emptyState.style.display = "none";
+      mosquitoContainer.classList.add("racket-cursor");
+
+      // Clear existing mosquitoes
+      document.querySelectorAll(".mosquito").forEach((el) => el.remove());
+
+      const containerRect = mosquitoContainer.getBoundingClientRect();
+
+      mosquitoes.forEach(({ name, number }, index) => {
+        const mosquito = document.createElement("div");
+        mosquito.className = "mosquito";
+        mosquito.dataset.index = index;
+        mosquito.dataset.name = name;
+        mosquito.dataset.number = number;
+        mosquito.style.left = Math.random() * (containerRect.width - 64) + "px";
+        mosquito.style.top = Math.random() * (containerRect.height - 64) + "px";
+
+        mosquito.innerHTML = `
+          <span>🦟</span>
+          <div class="name">${name}</div>
+          <div class="number">#${number}</div>
+        `;
+
+        mosquito.addEventListener("click", zapMosquito);
+
+        mosquitoContainer.appendChild(mosquito);
+
+        animateMosquito(mosquito);
+      });
+    }
+
+    // Animate mosquito movement
+    function animateMosquito(mosquito) {
+      const containerRect = mosquitoContainer.getBoundingClientRect();
+
+      mosquito.animationInterval = setInterval(() => {
+        if (!isZapping) {
+          const newX = Math.max(
+            0,
+            Math.min(
+              containerRect.width - 64,
+              parseFloat(mosquito.style.left) + (Math.random() - 0.5) * 20
+            )
+          );
+          const newY = Math.max(
+            0,
+            Math.min(
+              containerRect.height - 64,
+              parseFloat(mosquito.style.top) + (Math.random() - 0.5) * 20
+            )
+          );
+
+          mosquito.style.left = newX + "px";
+          mosquito.style.top = newY + "px";
+        }
+      }, 2000);
+    }
+
+    // Zap mosquito function (click or input)
+    function zapMosquito(event) {
+      if (isZapping) return;
+      isZapping = true;
+
+      const zappedMosquitoElement = event.currentTarget;
+      const index = parseInt(zappedMosquitoElement.dataset.index, 10);
+      const name = zappedMosquitoElement.dataset.name;
+      const number = parseInt(zappedMosquitoElement.dataset.number, 10);
+
+      // Stop animation
+      clearInterval(zappedMosquitoElement.animationInterval);
+
+      // Show the mosquito's name and number by adding class
+      zappedMosquitoElement.classList.add("show-info");
+
+      // Show zap effect
+      const zapEffect = document.createElement("div");
+      zapEffect.className = "zap-effect";
+      zapEffect.innerHTML = "⚡";
+      zappedMosquitoElement.appendChild(zapEffect);
+
+      setTimeout(() => {
+        zapEffect.remove();
+
+        // Remove the zapped mosquito from the array and free number
+        if (index >= 0 && index < mosquitoes.length) {
+          const removed = mosquitoes.splice(index, 1)[0];
+          usedNumbers.delete(removed.number);
+        }
+
+        updateMosquitoDisplay();
+
+        showNotification(`Huli ka, ${name} (#${number})!`);
+
+        isZapping = false;
+      }, 1000);
+    }
+
+    // Show notification
+    function showNotification(message) {
+      notification.textContent = message;
+      notification.classList.add("show");
+
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, 3000);
+    }
+
+    // Event listeners
+    addButton.addEventListener("click", addRandomMosquito);
+    zapButton.addEventListener("click", zapByNumber);
+
+    numberInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        zapByNumber();
+      }
+    });
+
+    // Initial focus on input
+    numberInput.focus();
+
+    // Initialize with default mosquitoes
+    initializeDefaultMosquitoes();
+    updateMosquitoDisplay();
+  </script>
+</body>
+</html>
